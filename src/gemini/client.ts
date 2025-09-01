@@ -113,6 +113,10 @@ export class GeminiClient {
     const response = await this.ai.models.generateContent({
       model: "gemini-2.5-flash-image-preview",
       contents: contents,
+      config: {
+        systemInstruction:
+          "You are a virtual interior designer, your goal is to add furniture and decor to a room, without changing the strucutre.",
+      },
     });
 
     const candidates = (response as any)?.candidates as Candidate[] | undefined;
