@@ -23,15 +23,19 @@ function UploadDashboard() {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   return (
-    <UppyContextProvider uppy={uppy}>
-      <div className="max-w-md mx-auto flex flex-col gap-3">
-        <article>
-          <CustomDropzone openModal={(plugin) => {}} />
-        </article>
-        <UploadButton />
-        <FilesGrid />
+    <section className="section-padding">
+      <div className="max-w-[1600px] mx-auto w-full">
+        <UppyContextProvider uppy={uppy}>
+          <div className="max-w-md mx-auto flex flex-col gap-3">
+            <article>
+              <CustomDropzone openModal={(plugin) => {}} />
+            </article>
+            <UploadButton />
+            <FilesGrid />
+          </div>
+        </UppyContextProvider>
       </div>
-    </UppyContextProvider>
+    </section>
   );
 }
 

@@ -13,7 +13,7 @@ export function CustomDropzone({ openModal }: CustomDropzoneProps) {
       <input {...getInputProps()} className="hidden" />
       <div
         {...getRootProps()}
-        className="border border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 transition-colors duration-200"
+        className="border border-dashed   rounded-lg p-6 bg-muted transition-colors duration-200"
       >
         <div className="flex items-center justify-center gap-4">
           <input {...getFileInputProps()} className="hidden" />

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { supabase } from "@/supabase";
 import { getCurrentUser, signInAnon } from "../../utils/supabase/auth/get-user";
+import AuthBootstrap from "@/components/auth-bootstrap";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,15 +25,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getCurrentUser();
-
-  console.log(user, "USER");
-
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <AuthBootstrap />
         {children}
       </body>
     </html>
