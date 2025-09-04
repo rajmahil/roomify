@@ -10,7 +10,15 @@
   },
   "dependencies": {
     "@google/genai": "^1.16.0",
-    "@supabase/supabase-js": "^2.56.1",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.57.0",
+    "@tus/file-store": "^2.0.0",
+    "@tus/server": "^2.3.0",
+    "@uppy/core": "^5.0.1",
+    "@uppy/dashboard": "^5.0.1",
+    "@uppy/react": "^5.0.2",
+    "@uppy/tus": "^5.0.0",
+    "@uppy/xhr-upload": "^5.0.0",
     "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0"
