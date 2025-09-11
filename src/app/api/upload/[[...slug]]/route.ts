@@ -3,7 +3,7 @@ import { FileStore } from "@tus/file-store";
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import { GeminiClient } from "@/gemini/client";
+import { GeminiClient, ManyResult } from "@/gemini/client";
 import { geminiClient } from "@/gemini";
 import { getCurrentUser } from "../../../../../utils/supabase/auth/get-user";
 
@@ -51,9 +51,16 @@ export async function POST(request: NextRequest) {
     const pathId = `${Date.now()}-${filename}`;
 
     // Send to Gemini (adjust field names if your SDK expects different keys)
-    await geminiClient.uploadImages([
+    const uploadResult = (await geminiClient.uploadImages([
       { path: `${user?.id}/${pathId}`, bytes, mime }, // some SDKs use mimeType instead of mime
-    ]);
+    ])) as ManyResult;
+
+    if (!uploadResult || uploadResult?.errors.length > 0) {
+      return NextResponse.json(
+        { error: "Error uploading file" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       message: "File uploaded successfully",

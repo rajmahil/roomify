@@ -18,7 +18,7 @@ type UploadItem = {
 };
 
 type SingleResult = { path: string; data: any; error: any | null };
-type ManyResult = {
+export type ManyResult = {
   successes: SingleResult[];
   errors: { path: string; error: any }[];
 };

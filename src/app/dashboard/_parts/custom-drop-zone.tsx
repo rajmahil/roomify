@@ -9,11 +9,11 @@ export function CustomDropzone({ openModal }: CustomDropzoneProps) {
   const { getButtonProps, getInputProps: getFileInputProps } = useFileInput();
 
   return (
-    <div>
+    <div className="relative z-[1]">
       <input {...getInputProps()} className="hidden" />
       <div
         {...getRootProps()}
-        className="border border-dashed   rounded-lg p-6 bg-muted transition-colors duration-200"
+        className="border-2 border-dashed   rounded-lg p-6 bg-muted/70 transition-colors duration-200"
       >
         <div className="flex items-center justify-center gap-4">
           <input {...getFileInputProps()} className="hidden" />
