@@ -4,6 +4,7 @@ import "./globals.css";
 import { supabase } from "@/supabase";
 import { getCurrentUser, signInAnon } from "../../utils/supabase/auth/get-user";
 import AuthBootstrap from "@/components/auth-bootstrap";
+import { NuqsAdapter } from "nuqs/adapters/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthBootstrap />
-        {children}
+        <NuqsAdapter>{children}</NuqsAdapter>
       </body>
     </html>
   );

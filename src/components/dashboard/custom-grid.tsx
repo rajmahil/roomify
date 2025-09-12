@@ -119,7 +119,7 @@ export default function CustomFilesGrid({
                 {file.name}
               </p>
 
-              <div className="flex flex-row items-center gap-3 text-muted-foreground text-sm">
+              <div className="flex flex-row items-center gap-2 text-muted-foreground text-sm">
                 <div className="flex flex-row items-center gap-1">
                   <IconArrowsMaximize stroke={2} size={14} />
                   <p className="text-sm ">
@@ -131,12 +131,12 @@ export default function CustomFilesGrid({
                 <div className="h-px w-3  bg-muted-foreground" />
 
                 {!isComplete && !hasError ? (
-                  <div className="flex flex-row items-center gap-1.5 ">
+                  <div className="flex flex-row items-center gap-1 ">
                     <div className="h-2.5 w-2.5 bg-yellow-500 rounded-xs"></div>
                     <p className="text-sm">Upload Ready</p>
                   </div>
                 ) : (
-                  <div className="flex flex-row items-center gap-1.5 ">
+                  <div className="flex flex-row items-center gap-1 ">
                     <div className="h-2.5 w-2.5 bg-green-600 rounded-xs"></div>
                     <p className="text-sm">Uploaded</p>
                   </div>

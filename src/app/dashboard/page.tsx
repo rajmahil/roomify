@@ -1,4 +1,4 @@
-import UploadDashboard from "@/components/dashboard";
+import UploadDashboard from "@/components/dashboard/dashboard";
 import React from "react";
 import { getCurrentUser } from "../../../utils/supabase/auth/get-user";
 
