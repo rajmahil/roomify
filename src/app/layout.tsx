@@ -5,6 +5,8 @@ import { supabase } from "@/supabase";
 import { getCurrentUser, signInAnon } from "../../utils/supabase/auth/get-user";
 import AuthBootstrap from "@/components/auth-bootstrap";
 import { NuqsAdapter } from "nuqs/adapters/next";
+import { ThemeProvider } from "@/components/theme-provider";
+import Footer from "@/components/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +34,19 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthBootstrap />
-        <NuqsAdapter>{children}</NuqsAdapter>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NuqsAdapter>
+            <main data-vaul-drawer-wrapper="" className="min-h-screen">
+              {children}
+              <Footer />
+            </main>
+          </NuqsAdapter>
+        </ThemeProvider>
       </body>
     </html>
   );

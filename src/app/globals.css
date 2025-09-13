@@ -44,6 +44,36 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+
+  --breakpoint-375: 375px;
+  --breakpoint-400: 400px;
+  --breakpoint-450: 450px;
+  --breakpoint-500: 500px;
+  --breakpoint-550: 550px;
+  --breakpoint-600: 600px;
+  --breakpoint-650: 650px;
+  --breakpoint-700: 700px;
+  --breakpoint-750: 750px;
+  --breakpoint-800: 800px;
+  --breakpoint-850: 850px;
+  --breakpoint-900: 900px;
+  --breakpoint-950: 950px;
+  --breakpoint-1000: 1000px;
+  --breakpoint-1050: 1050px;
+  --breakpoint-1100: 1100px;
+  --breakpoint-1150: 1150px;
+  --breakpoint-1200: 1200px;
+  --breakpoint-1250: 1250px;
+  --breakpoint-1300: 1300px;
+  --breakpoint-1350: 1350px;
+  --breakpoint-1400: 1400px;
+  --breakpoint-1450: 1450px;
+  --breakpoint-1500: 1500px;
+  --breakpoint-1550: 1550px;
+  --breakpoint-1600: 1600px;
+  --breakpoint-1650: 1650px;
+  --breakpoint-1700: 1700px;
 }
 
 
@@ -123,9 +153,11 @@ button[data-uppy-element='upload-button'] {
   width: fit-content;
 }
 
+
+
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/500 tracking-[-0.020em];
   }
   body {
     @apply bg-background text-foreground;
@@ -139,4 +171,9 @@ button[data-uppy-element='upload-button'] {
     @apply py-24 md:py-24 lg:py-28 px-2 sm:px-4 lg:px-12;
   }
 
+  .upload-icons {
+    @apply p-1 cursor-pointer bg-white rounded-md shadow-lg shadow-stone-400/20 h-16 w-16 flex items-center justify-center inset-shadow-sm hover:translate-y-[-5px] transition-all duration-300 ease-in-out
+
+
+  } 
 }

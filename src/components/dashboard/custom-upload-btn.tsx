@@ -15,6 +15,7 @@ function CustomUploadButton({ uppy }: { uppy: Uppy }) {
   const handleUpload = () => {
     uppy.upload();
 
+    console.log(uppy, "uyploading in uyppy");
     setDashValues({ currStep: dashValues.currStep + 1 });
   };
 

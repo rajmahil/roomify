@@ -1,10 +1,15 @@
-import { ProviderIcon, useDropzone, useFileInput } from "@uppy/react";
+import { useDropzone, useFileInput } from "@uppy/react";
+import { RemoteSource } from "./remote-source";
+import Image from "next/image";
+import FolderIcon from "../../../public/src-icons/folder.png";
+import UrlUpload from "./url-upload";
+import Uppy from "@uppy/core";
 
 export interface CustomDropzoneProps {
-  openModal: (plugin: "webcam" | "dropbox" | "screen-capture") => void;
+  uppy: Uppy;
 }
 
-export function CustomDropzone({ openModal }: CustomDropzoneProps) {
+export function CustomDropzone({ uppy }: CustomDropzoneProps) {
   const { getRootProps, getInputProps } = useDropzone({ noClick: true });
   const { getButtonProps, getInputProps: getFileInputProps } = useFileInput();
 
@@ -13,30 +18,31 @@ export function CustomDropzone({ openModal }: CustomDropzoneProps) {
       <input {...getInputProps()} className="hidden" />
       <div
         {...getRootProps()}
-        className="border-2 border-dashed   rounded-lg p-6 bg-muted/70 transition-colors duration-200"
+        className="border-2 border-dashed  rounded-lg p-6 bg-muted/70 transition-colors duration-200 flex flex-col gap-6"
       >
-        <div className="flex items-center justify-center gap-4">
+        <p className="text-center text-muted-foreground/80">
+          Drag and drop to upload files or pick from below{" "}
+        </p>
+        <div className="flex items-center justify-center gap-3">
           <input {...getFileInputProps()} className="hidden" />
-          <button
-            {...getButtonProps()}
-            className="hover:bg-gray-100 transition-colors p-2 rounded-md flex flex-col items-center gap-2 text-sm"
-          >
-            <div className="bg-white shadow-md rounded-md p-1">
-              <ProviderIcon provider="device" fill="#1269cf" />
-            </div>
-            Device
-          </button>
 
-          <button
-            type="button"
-            onClick={() => openModal("dropbox")}
-            className="hover:bg-gray-100 transition-colors p-2 rounded-md flex flex-col items-center gap-2 text-sm"
-          >
-            <div className="bg-white shadow-md rounded-md p-1">
-              <ProviderIcon provider="dropbox" />
+          <button {...getButtonProps()}>
+            <div className="flex flex-col items-center gap-2 text-sm">
+              <div className="upload-icons">
+                <Image
+                  src={FolderIcon || "/placeholder.svg"}
+                  height={50}
+                  width={50}
+                  alt="upload images from device"
+                  aria-label="device"
+                />
+              </div>
+              <p className="text-muted-foreground">Device</p>
             </div>
-            Dropbox
           </button>
+          <RemoteSource close={() => {}} id="GoogleDrive" uppy={uppy} />
+          <RemoteSource close={() => {}} id="Dropbox" uppy={uppy} />
+          <UrlUpload close={() => {}} uppy={uppy} />
         </div>
       </div>
     </div>

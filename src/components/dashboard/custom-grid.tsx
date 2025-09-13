@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { IconArrowsMaximize, IconTrash, IconX } from "@tabler/icons-react";
 import Image from "next/image";
+import { useEffect } from "react";
 
 interface CustomFilesGridProps {
   columns?: number;
@@ -32,25 +33,39 @@ export default function CustomFilesGrid({
     return file.type?.startsWith("image/");
   };
 
-  const getFilePreview = (
-    file: UppyFile<Record<string, unknown>, Record<string, unknown>>
-  ) => {
-    if (file.preview) {
-      return file.preview;
-    }
-    if (file.data && isImage(file)) {
-      return URL.createObjectURL(file.data as Blob);
-    }
+  function isBlobLike(x: object): x is Blob {
+    return (
+      !!x &&
+      typeof x === "object" &&
+      "type" in (x as object) &&
+      "size" in (x as object)
+    );
+  }
+
+  function isImageFile(file: UppyFile<any, any>) {
+    return (file.type ?? file.meta?.type)?.toString().startsWith("image/");
+  }
+
+  const getFilePreview = (file: UppyFile<any, any>) => {
+    if (typeof file.preview === "string") return file.preview;
+    if (typeof file.meta?.previewUrl === "string") return file.meta.previewUrl; // <—
+    if (typeof file.meta?.thumbnailUrl === "string")
+      return file.meta.thumbnailUrl;
+    if (isImageFile(file) && isBlobLike(file.data))
+      return URL.createObjectURL(file.data);
     return null;
   };
 
-  // if (fileArray.length === 0) {
-  //   return (
-  //     <div className="text-center py-8 text-muted-foreground">
-  //       No files uploaded yet
-  //     </div>
-  //   );
-  // }
+  useEffect(() => {
+    const urls: string[] = [];
+    Object.values(files).forEach((f) => {
+      const p = getFilePreview(f as any);
+      if (p?.startsWith("blob:")) urls.push(p);
+    });
+    return () => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [files]);
 
   return (
     <div
@@ -66,40 +81,23 @@ export default function CustomFilesGrid({
 
         return (
           <Card key={file.id} className="relative overflow-hidden">
-            <CardContent className="aspect-square relative bg-muted/50 rounded-lg overflow-hidden">
+            <CardContent className="aspect-square relative bg-muted/50 rounded-lg overflow-hidden ">
+              <div className="absolute top-0 left-0 w-full h-full bg-black/15"></div>
               {preview ? (
                 <Image
-                  src={preview || "/placeholder.svg"}
-                  alt={file?.name || "File preview"}
-                  className="w-full h-full object-cover object-center"
+                  src={preview}
+                  alt={file.name || "File preview"}
                   width={500}
                   height={500}
+                  className="w-full h-full object-cover object-center bg-muted"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   {isImage(file) ? (
-                    <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                    <ImageIcon className="w-12 h-12 text-muted-foreground " />
                   ) : (
                     <FileIcon className="w-12 h-12 text-muted-foreground" />
                   )}
-                </div>
-              )}
-
-              {/* Progress overlay */}
-              {/* {!isComplete && !hasError && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <div className="text-white text-sm font-medium">
-                    {Math.round(progress)}%
-                  </div>
-                </div>
-              )} */}
-
-              {/* Error overlay */}
-              {hasError && (
-                <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center">
-                  <div className="text-white text-sm font-medium">
-                    Upload failed
-                  </div>
                 </div>
               )}
 
@@ -107,7 +105,7 @@ export default function CustomFilesGrid({
               <Button
                 variant={"ghost"}
                 size="icon"
-                className="absolute top-1 right-1 w-6 h-6 text-white cursor-pointer"
+                className="absolute top-1 right-1 w-6 h-6 text-white cursor-pointer "
                 onClick={() => removeFile(file.id)}
               >
                 <IconX stroke={3} className="h-4 w-4 drop-shadow-xl" />
@@ -135,10 +133,15 @@ export default function CustomFilesGrid({
                     <div className="h-2.5 w-2.5 bg-yellow-500 rounded-xs"></div>
                     <p className="text-sm">Upload Ready</p>
                   </div>
-                ) : (
+                ) : !hasError ? (
                   <div className="flex flex-row items-center gap-1 ">
                     <div className="h-2.5 w-2.5 bg-green-600 rounded-xs"></div>
                     <p className="text-sm">Uploaded</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-row items-center gap-1 ">
+                    <div className="h-2.5 w-2.5 bg-red-600 rounded-xs"></div>
+                    <p className="text-sm">Failed</p>
                   </div>
                 )}
               </div>
