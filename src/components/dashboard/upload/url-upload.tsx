@@ -1,7 +1,7 @@
 import { addImageUrlAsBlob } from "@/lib/addImageAsBlob";
 import Uppy, { Meta, PluginTarget, UnknownPlugin } from "@uppy/core";
 import { useRef, useState } from "react";
-import { Input } from "../ui/input";
+import { Input } from "../../ui/input";
 
 function UrlUpload({ uppy, close }: { uppy: Uppy; close: () => void }) {
   const [loading, setLoading] = useState(false);

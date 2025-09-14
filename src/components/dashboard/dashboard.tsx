@@ -6,10 +6,10 @@ import { useState } from "react";
 import Xhr from "@uppy/xhr-upload";
 import Url from "@uppy/url";
 import "@uppy/react/css/style.css";
-import CustomDropzone from "@/components/dashboard/custom-drop-zone";
-import CustomFilesGrid from "@/components/dashboard/custom-grid";
+import CustomDropzone from "@/components/dashboard/upload/custom-drop-zone";
+import CustomFilesGrid from "@/components/dashboard/upload/custom-grid";
 import { Button } from "../ui/button";
-import CustomUploadButton from "./custom-upload-btn";
+import CustomUploadButton from "./upload/custom-upload-btn";
 import FormStepper from "./form-stepper";
 import Transloadit, {
   COMPANION_URL,
@@ -18,8 +18,32 @@ import Transloadit, {
 import ThumbnailGenerator from "@uppy/thumbnail-generator";
 import RemoteSources from "@uppy/remote-sources";
 import GoldenRetriever from "@uppy/golden-retriever";
+import { Tabs, TabsContent } from "../ui/tabs";
+import FormNavigation, { FormSteps } from "./form-navigation";
+import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
+import ImagePicker from "./design/image-picker";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 function UploadDashboard() {
+  const [values, setValues] = useQueryStates(
+    {
+      step: parseAsStringEnum<FormSteps>(Object.values(FormSteps)).withDefault(
+        FormSteps.upload
+      ),
+      project_id: parseAsString.withDefault(""),
+    },
+    {
+      history: "push",
+    }
+  );
+  const { project_id } = values;
+
   const [uppy] = useState(() => {
     const uppyInstance = new Uppy()
 
@@ -76,23 +100,34 @@ function UploadDashboard() {
 
   return (
     <section className="section-padding">
-      <div className="max-w-[1600px] mx-auto ">
-        <UppyContextProvider uppy={uppy}>
-          <div className="max-w-6xl mx-auto flex flex-col gap-8 w-full ring-5 ring-muted p-8 rounded-lg bg-white dark:bg-stone-900">
-            <FormStepper />
-            <article className="relative">
-              <CustomDropzone uppy={uppy} />
-            </article>
-            <CustomFilesGrid columns={5} uppy={uppy} />
-            {/* <FilesGrid /> */}
-            <div className="w-full flex items-center justify-end gap-2">
-              <Button variant={"secondary"} size={"lg"}>
-                Clear All
-              </Button>
-              <CustomUploadButton uppy={uppy} />
-            </div>
-          </div>
-        </UppyContextProvider>
+      <div className="max-w-[1600px] mx-auto">
+        <QueryClientProvider client={queryClient}>
+          <UppyContextProvider uppy={uppy}>
+            <Tabs
+              defaultValue="upload"
+              className="w-full"
+              value={values.step}
+              onValueChange={(value) => setValues({ step: value as FormSteps })}
+            >
+              <div className="max-w-6xl mx-auto flex flex-col gap-8 w-full ring-5 ring-muted p-8 rounded-lg bg-white dark:bg-stone-900">
+                <FormStepper />
+                <TabsContent value="upload">
+                  <div className="flex flex-col gap-8">
+                    <CustomDropzone uppy={uppy} />
+                    <CustomFilesGrid columns={5} uppy={uppy} />
+                  </div>
+                </TabsContent>
+                <TabsContent value="design">
+                  <ImagePicker project_id={project_id} />
+                </TabsContent>
+                <TabsContent value="export">
+                  Change your password here.
+                </TabsContent>
+                <FormNavigation uppy={uppy} />
+              </div>
+            </Tabs>
+          </UppyContextProvider>
+        </QueryClientProvider>
       </div>
     </section>
   );

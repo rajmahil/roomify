@@ -1,7 +1,7 @@
 import { useDropzone, useFileInput } from "@uppy/react";
 import { RemoteSource } from "./remote-source";
 import Image from "next/image";
-import FolderIcon from "../../../public/src-icons/folder.png";
+import FolderIcon from "../../../../public/src-icons/folder.png";
 import UrlUpload from "./url-upload";
 import Uppy from "@uppy/core";
 
@@ -18,7 +18,7 @@ export function CustomDropzone({ uppy }: CustomDropzoneProps) {
       <input {...getInputProps()} className="hidden" />
       <div
         {...getRootProps()}
-        className="border-2 border-dashed  rounded-lg p-6 bg-muted/70 transition-colors duration-200 flex flex-col gap-6"
+        className="border-2 border-dashed  hover:border-primary rounded-lg p-6 bg-muted/70 transition-colors duration-200 flex flex-col gap-6"
       >
         <p className="text-center text-muted-foreground/80">
           Drag and drop to upload files or pick from below{" "}

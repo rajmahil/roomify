@@ -4,29 +4,22 @@ import type { PartialTreeFile, PartialTreeFolderNode, Uppy } from "@uppy/core";
 import { useRemoteSource } from "@uppy/react";
 import type { AvailablePluginsKeys } from "@uppy/remote-sources";
 import { Ref, RefAttributes, useEffect, useRef, useState } from "react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "../ui/drawer";
 import Image from "next/image";
-import GoogleDriveIcon from "../../../public/src-icons/google-drive.png";
-import DropboxIcon from "../../../public/src-icons/dropbox.png";
-import { isImageFile } from "@/lib/isImageFile";
-import { SideDrawer } from "../ui/side-drawer";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
+import GoogleDriveIcon from "../../../../public/src-icons/google-drive.png";
+import DropboxIcon from "../../../../public/src-icons/dropbox.png";
+import { SideDrawer } from "../../ui/side-drawer";
+import { Button } from "../../ui/button";
 import {
   IconCheck,
   IconChevronRight,
   IconFile,
   IconFolders,
+  IconLink,
   IconLoader,
 } from "@tabler/icons-react";
-import { Checkbox } from "../ui/checkbox";
+import { Checkbox } from "../../ui/checkbox";
+import { cn } from "@/lib/utils";
+import RemoteSrcFileLoad from "../../loading-skeletons/remote-src-file-load";
 
 const methodTitle: Record<string, string> = {
   GoogleDrive: "Google Drive",
@@ -48,10 +41,17 @@ function File({
     }
   }, [item.status]);
 
+  console.log(item);
+
   return (
     <li
       key={item.id}
-      className="group flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors duration-200 cursor-pointer relative"
+      className={cn(
+        {
+          "!bg-accent/50": item.status === "checked",
+        },
+        "group flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer relative animations"
+      )}
       onClick={() => checkbox(item, false)}
     >
       <Checkbox
@@ -64,10 +64,12 @@ function File({
 
       <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
         {item.data.thumbnail ? (
-          <img
+          <Image
             src={item.data.thumbnail || "/placeholder.svg"}
-            alt=""
+            alt="file thumbnail"
             className="w-8 h-8 rounded object-cover border border-border/50"
+            width={32}
+            height={32}
           />
         ) : (
           <IconFile className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -81,11 +83,17 @@ function File({
       </div>
 
       <div className="absolute right-0 top-0 h-full px-2 flex items-center justify-center">
-        {item.status === "checked" && (
-          <div className="bg-primary/90 text-background rounded-full p-1">
-            <IconCheck stroke={2} size={14} />
-          </div>
-        )}
+        <div
+          className={cn(
+            {
+              "scale-[100%]": item.status === "checked",
+              "scale-0": item.status !== "checked",
+            },
+            "bg-primary/90 text-background rounded-full p-1 animations "
+          )}
+        >
+          <IconCheck stroke={2} size={14} />
+        </div>
       </div>
     </li>
   );
@@ -259,10 +267,6 @@ export function RemoteSource({
     const successful = results.filter((r) => r.success).length;
     const failed = results.filter((r) => !r.success).length;
 
-    console.log(
-      `[v0] Processed ${successful} files successfully, ${failed} failed`
-    );
-
     setIsLoading(false);
     setDrawerOpen(false);
   };
@@ -286,66 +290,85 @@ export function RemoteSource({
       direction="right"
       width="600px"
       footer={
-        <div className="flex flex-col  w-full justify-between gap-3 p-4 ">
-          <div className="flex flex-row items-center gap-0">
-            {state.breadcrumbs.map((breadcrumb, index) => {
-              console.log(breadcrumb);
-              return (
-                <div
-                  key={breadcrumb.id}
-                  className="text-sm text-muted-foreground flex flex-row items-center gap-0"
-                >
-                  {state.breadcrumbs.length <= 1 ? (
-                    <span>
-                      {methodTitle[id] ? methodTitle[id] : "Remote Source"}
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => open(breadcrumb.id)}
-                      className="hover:!text-primary animations cursor-pointer"
-                    >
-                      {/* @ts-ignore */}
-                      {breadcrumb?.data?.name || methodTitle[id] || "Root"}
-                    </button>
-                  )}
-                  {index < state.breadcrumbs.length - 1 && (
-                    <IconChevronRight stroke={1} size={18} className="mx-1" />
-                  )}
-                </div>
-              );
-            })}
+        Boolean(state.authenticated) || !state.partialTree.length ? (
+          <div className="flex flex-col  w-full justify-between gap-3 p-4 ">
+            <div className="flex flex-row items-center gap-0">
+              {state.breadcrumbs.map((breadcrumb, index) => {
+                console.log(breadcrumb);
+                return (
+                  <div
+                    key={breadcrumb.id}
+                    className="text-sm text-muted-foreground flex flex-row items-center gap-0"
+                  >
+                    {state.breadcrumbs.length <= 1 ? (
+                      <span>
+                        {methodTitle[id] ? methodTitle[id] : "Remote Source"}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => open(breadcrumb.id)}
+                        className="hover:!text-primary animations cursor-pointer"
+                      >
+                        {/* @ts-ignore */}
+                        {breadcrumb?.data?.name || methodTitle[id] || "Root"}
+                      </button>
+                    )}
+                    {index < state.breadcrumbs.length - 1 && (
+                      <IconChevronRight stroke={1} size={18} className="mx-1" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex flex-row items-center  gap-2">
+              <Button
+                type="button"
+                onClick={handleDone}
+                disabled={state.selectedAmount < 1 || isLoading}
+              >
+                {isLoading && <IconLoader className="animate-spin" />} Add{" "}
+                {state.selectedAmount}{" "}
+                {state.selectedAmount > 1 ? "images" : "image"}
+              </Button>
+              <Button
+                variant={"secondary"}
+                disabled={isLoading}
+                type="button"
+                onClick={() => {
+                  setDrawerOpen(false);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-row items-center  gap-2">
-            <Button
-              type="button"
-              onClick={handleDone}
-              disabled={state.selectedAmount < 1 || isLoading}
-            >
-              {isLoading && <IconLoader className="animate-spin" />} Add{" "}
-              {state.selectedAmount}{" "}
-              {state.selectedAmount > 1 ? "images" : "image"}
+        ) : (
+          <div className="flex flex-row  w-full  p-4 gap-2">
+            <Button className="w-fit" onClick={() => login()}>
+              <IconLink stroke={2} />
+              Connect Your {methodTitle[id]
+                ? methodTitle[id]
+                : "Remote Source"}{" "}
+              Account
             </Button>
-            <Button
-              variant={"secondary"}
-              disabled={isLoading}
-              type="button"
-              onClick={() => {
-                cancel();
-              }}
-            >
+            <Button onClick={() => setDrawerOpen(false)} variant={"secondary"}>
               Cancel
             </Button>
           </div>
-        </div>
+        )
       }
     >
       <div className="pb-24">
-        {state.authenticated && (
+        {Boolean(state.authenticated) && (
           <div className="relative flex flex-col">
             <ul className="flex-1 space-y-2">
               {state.loading ? (
-                <p>loading...</p>
+                <div className="flex flex-col gap-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <RemoteSrcFileLoad key={i} />
+                  ))}
+                </div>
               ) : (
                 state.partialTree.map((item) => {
                   if (item.type === "file") {

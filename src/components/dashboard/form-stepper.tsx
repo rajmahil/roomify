@@ -4,6 +4,10 @@ import React from "react";
 const FormStepper = () => {
   return (
     <div className="flex flex-row items-center gap-0 text-muted-foreground/60">
+      {/* <TabsList>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="password">Password</TabsTrigger>
+  </TabsList> */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-row items-center gap-1.5 !text-primary">
           <div className="rounded-full ">
