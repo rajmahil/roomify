@@ -20,44 +20,14 @@ import RemoteSources from "@uppy/remote-sources";
 import GoldenRetriever from "@uppy/golden-retriever";
 import { Tabs, TabsContent } from "../ui/tabs";
 import FormNavigation from "./form-navigation";
-import {
-  parseAsString,
-  parseAsStringEnum,
-  ParserBuilder,
-  useQueryStates,
-} from "nuqs";
-import ImagePicker from "./design/image-picker";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import DesignTab from "./design/design-tab";
+import { FormSteps, useDashbaordSearchParams } from "./search-params";
 
 const queryClient = new QueryClient();
 
-export enum FormSteps {
-  upload = "upload",
-  design = "design",
-  export = "export",
-}
-
 function UploadDashboard() {
-  const [values, setValues] = useQueryStates(
-    {
-      step: parseAsStringEnum<FormSteps>(Object.values(FormSteps)).withDefault(
-        FormSteps.upload
-      ),
-      project_id: parseAsString.withDefault(""),
-      current_image: parseAsString.withDefault(""),
-      edited_current_image: parseAsString.withDefault(""),
-    },
-    {
-      history: "push",
-    }
-  );
-  const { project_id, current_image, edited_current_image } = values;
-
+  const { step, setValues } = useDashbaordSearchParams();
   const [uppy] = useState(() => {
     const uppyInstance = new Uppy()
 
@@ -120,7 +90,7 @@ function UploadDashboard() {
             <Tabs
               defaultValue="upload"
               className="w-full"
-              value={values.step}
+              value={step}
               onValueChange={(value) => setValues({ step: value as FormSteps })}
             >
               <div className=" mx-auto flex flex-col gap-8 w-full ring-5 ring-muted p-8 rounded-lg bg-white dark:bg-stone-900">
@@ -132,22 +102,12 @@ function UploadDashboard() {
                   </div>
                 </TabsContent>
                 <TabsContent value="design">
-                  <DesignTab
-                    project_id={project_id}
-                    current_image={current_image}
-                    edited_current_image={edited_current_image}
-                    setValues={setValues}
-                  />
+                  <DesignTab />
                 </TabsContent>
                 <TabsContent value="export">
                   Change your password here.
                 </TabsContent>
-                <FormNavigation
-                  uppy={uppy}
-                  step={values.step}
-                  project_id={project_id}
-                  setValues={setValues}
-                />
+                <FormNavigation uppy={uppy} />
               </div>
             </Tabs>
           </UppyContextProvider>

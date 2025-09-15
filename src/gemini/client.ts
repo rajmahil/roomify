@@ -136,7 +136,11 @@ export class GeminiClient {
       if (!b64) continue; // skip text parts like “Here is your image...”
       const mime = p.inlineData?.mimeType || "image/png";
       const ext = mime === "image/jpeg" ? "jpg" : mime.split("/")[1] || "png";
-      const filePath = `${original_image}-${Date.now()}.${ext}`;
+
+      const originalImagePath = original_image.includes("--edit--")
+        ? original_image.split("--edit--")[0]
+        : original_image;
+      const filePath = `${originalImagePath}--edit--${Date.now()}.${ext}`;
 
       await this.uploadImages([
         {

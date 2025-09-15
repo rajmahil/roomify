@@ -6,19 +6,10 @@ import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { supabase } from "@/supabase";
 import { createNewProject } from "@/supabase/helpers";
-import { FormSteps } from "./dashboard";
+import { FormSteps, useDashbaordSearchParams } from "./search-params";
 
-const FormNavigation = ({
-  uppy,
-  step,
-  project_id,
-  setValues,
-}: {
-  uppy: Uppy;
-  step: FormSteps;
-  project_id: string;
-  setValues: (values: any) => void;
-}) => {
+const FormNavigation = ({ uppy }: { uppy: Uppy }) => {
+  const { project_id, step, setValues } = useDashbaordSearchParams();
   const [loading, setLoading] = React.useState(false);
 
   const handleNextStep = async () => {
