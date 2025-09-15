@@ -1,7 +1,10 @@
-export const createNewProject = async (images: string[] = []) => {
+export const createNewProject = async (
+  images: string[] = [],
+  project_id: string
+) => {
   const newProjectReq = await fetch("/api/projects/create", {
     method: "POST",
-    body: JSON.stringify({ images }),
+    body: JSON.stringify({ images, id: project_id }),
   });
 
   if (!newProjectReq.ok) {

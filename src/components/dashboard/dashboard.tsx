@@ -19,16 +19,28 @@ import ThumbnailGenerator from "@uppy/thumbnail-generator";
 import RemoteSources from "@uppy/remote-sources";
 import GoldenRetriever from "@uppy/golden-retriever";
 import { Tabs, TabsContent } from "../ui/tabs";
-import FormNavigation, { FormSteps } from "./form-navigation";
-import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
+import FormNavigation from "./form-navigation";
+import {
+  parseAsString,
+  parseAsStringEnum,
+  ParserBuilder,
+  useQueryStates,
+} from "nuqs";
 import ImagePicker from "./design/image-picker";
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
+import DesignTab from "./design/design-tab";
 
 const queryClient = new QueryClient();
+
+export enum FormSteps {
+  upload = "upload",
+  design = "design",
+  export = "export",
+}
 
 function UploadDashboard() {
   const [values, setValues] = useQueryStates(
@@ -37,12 +49,14 @@ function UploadDashboard() {
         FormSteps.upload
       ),
       project_id: parseAsString.withDefault(""),
+      current_image: parseAsString.withDefault(""),
+      edited_current_image: parseAsString.withDefault(""),
     },
     {
       history: "push",
     }
   );
-  const { project_id } = values;
+  const { project_id, current_image, edited_current_image } = values;
 
   const [uppy] = useState(() => {
     const uppyInstance = new Uppy()
@@ -109,7 +123,7 @@ function UploadDashboard() {
               value={values.step}
               onValueChange={(value) => setValues({ step: value as FormSteps })}
             >
-              <div className="max-w-6xl mx-auto flex flex-col gap-8 w-full ring-5 ring-muted p-8 rounded-lg bg-white dark:bg-stone-900">
+              <div className=" mx-auto flex flex-col gap-8 w-full ring-5 ring-muted p-8 rounded-lg bg-white dark:bg-stone-900">
                 <FormStepper />
                 <TabsContent value="upload">
                   <div className="flex flex-col gap-8">
@@ -118,12 +132,22 @@ function UploadDashboard() {
                   </div>
                 </TabsContent>
                 <TabsContent value="design">
-                  <ImagePicker project_id={project_id} />
+                  <DesignTab
+                    project_id={project_id}
+                    current_image={current_image}
+                    edited_current_image={edited_current_image}
+                    setValues={setValues}
+                  />
                 </TabsContent>
                 <TabsContent value="export">
                   Change your password here.
                 </TabsContent>
-                <FormNavigation uppy={uppy} />
+                <FormNavigation
+                  uppy={uppy}
+                  step={values.step}
+                  project_id={project_id}
+                  setValues={setValues}
+                />
               </div>
             </Tabs>
           </UppyContextProvider>

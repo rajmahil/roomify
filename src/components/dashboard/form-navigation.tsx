@@ -6,27 +6,20 @@ import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { supabase } from "@/supabase";
 import { createNewProject } from "@/supabase/helpers";
+import { FormSteps } from "./dashboard";
 
-export enum FormSteps {
-  upload = "upload",
-  design = "design",
-  export = "export",
-}
-
-const FormNavigation = ({ uppy }: { uppy: Uppy }) => {
+const FormNavigation = ({
+  uppy,
+  step,
+  project_id,
+  setValues,
+}: {
+  uppy: Uppy;
+  step: FormSteps;
+  project_id: string;
+  setValues: (values: any) => void;
+}) => {
   const [loading, setLoading] = React.useState(false);
-  const [values, setValues] = useQueryStates(
-    {
-      step: parseAsStringEnum<FormSteps>(Object.values(FormSteps)).withDefault(
-        FormSteps.upload
-      ),
-      project_id: parseAsString.withDefault(""),
-    },
-    {
-      history: "push",
-    }
-  );
-  const { step, project_id } = values;
 
   const handleNextStep = async () => {
     setLoading(true);
@@ -39,9 +32,10 @@ const FormNavigation = ({ uppy }: { uppy: Uppy }) => {
             .map((file) => file.response?.body?.path || "")
             .filter((path) => path !== "");
 
-          const { data: project } = !project_id
-            ? await createNewProject(imagesToAdd)
-            : { data: { id: project_id } }; //will need to upsert if more images are added to existing project
+          const { data: project } = await createNewProject(
+            imagesToAdd,
+            project_id
+          );
 
           setValues({
             step: FormSteps.design,

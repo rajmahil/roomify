@@ -80,7 +80,12 @@ export class GeminiClient {
     return saved;
   }
 
-  async imageToImageAndText(prompt: string, images: string[]) {
+  async imageToImageAndText(
+    prompt: string,
+    images: string[],
+    member_id: string,
+    original_image: string
+  ) {
     const imageParts = await Promise.all(
       images.map(async (url) => {
         const b64 = await this.urlToBase64(url);
@@ -113,10 +118,10 @@ export class GeminiClient {
     const response = await this.ai.models.generateContent({
       model: "gemini-2.5-flash-image-preview",
       contents: contents,
-      config: {
-        systemInstruction:
-          "You are a virtual interior designer, your goal is to add furniture and decor to a room, without changing the strucutre.",
-      },
+      // config: {
+      //   systemInstruction:
+      //     "You are a virtual interior designer, your goal is to add furniture and decor to a room, without changing the strucutre.",
+      // },
     });
 
     const candidates = (response as any)?.candidates as Candidate[] | undefined;
@@ -131,14 +136,15 @@ export class GeminiClient {
       if (!b64) continue; // skip text parts like “Here is your image...”
       const mime = p.inlineData?.mimeType || "image/png";
       const ext = mime === "image/jpeg" ? "jpg" : mime.split("/")[1] || "png";
-      const filePath = path.resolve(`test-${++index}.${ext}`);
+      const filePath = `${original_image}-${Date.now()}.${ext}`;
 
-      fs.writeFileSync(filePath, Buffer.from(b64, "base64"));
-
-      // Upload the image
-      //   await this.uploadImages([
-      //     { path: "1233", bytes: Buffer.from(b64, "base64"), mime },
-      //   ]);
+      await this.uploadImages([
+        {
+          path: `/${member_id}/${filePath}`,
+          bytes: Buffer.from(b64, "base64"),
+          mime,
+        },
+      ]);
 
       saved.push(filePath);
     }
