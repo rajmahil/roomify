@@ -124,6 +124,8 @@ export class GeminiClient {
       // },
     });
 
+    // console.log(response.candidates[0]?.content?.parts, "Response from Gemini");
+
     const candidates = (response as any)?.candidates as Candidate[] | undefined;
     const parts = candidates?.[0]?.content?.parts ?? [];
     if (!parts.length) throw new Error("No content returned by model");

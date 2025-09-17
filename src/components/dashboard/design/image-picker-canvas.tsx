@@ -1,30 +1,35 @@
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
 
-const ImagePickerCanvas = () => {
+const ImagePickerCanvas = ({ drawMode }: { drawMode: boolean }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+
   const [isDrawing, setIsDrawing] = useState(false);
+  const [canvasDimensions, setCanvasDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
   const [brushSize, setBrushSize] = useState(5);
   const [brushColor, setBrushColor] = useState("#FF0000");
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvasContainer = canvasContainerRef.current;
+    if (!canvasContainer) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const observer = new ResizeObserver(() => {
+      const height = canvasContainer.clientHeight;
+      const width = canvasContainer.clientWidth;
 
-    // Load default image
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      // Set canvas size to match image
-      canvas.width = img.width;
-      canvas.height = img.height;
+      setCanvasDimensions({ width, height });
 
-      // Draw the image
-      ctx.drawImage(img, 0, 0);
-    };
-    img.src = "/scenic-mountain-landscape.jpg";
+      console.log(height, width);
+    });
+
+    observer.observe(canvasContainer);
+
+    return () => observer.disconnect();
   }, []);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -104,17 +109,27 @@ const ImagePickerCanvas = () => {
       URL.revokeObjectURL(url);
     }, "image/png");
   };
+
   return (
-    <div className="absolute z-10 inset-0">
-      {" "}
+    <div
+      className={cn(
+        {
+          "pointer-events-none hidden": !drawMode,
+        },
+        "absolute z-1 inset-0 w-full h-full"
+      )}
+      ref={canvasContainerRef}
+    >
       <canvas
         ref={canvasRef}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
         onMouseLeave={stopDrawing}
-        className="border border-border rounded-lg cursor-crosshair max-w-full h-auto"
+        className="border border-border rounded-lg cursor-crosshair max-w-full "
         style={{ touchAction: "none" }}
+        height={canvasDimensions.height}
+        width={canvasDimensions.width}
       />
     </div>
   );

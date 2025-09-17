@@ -14,9 +14,5 @@ export async function POST(request: Request) {
     original_image
   );
 
-  // const images = await supabase.storage.from("images").list()
-
-  console.log(response, "Response from Gemini");
-
   return Response.json(response);
 }

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { createNewProject } from "@/supabase/helpers";
 import { useDashbaordSearchParams } from "../search-params";
 import { m as motion, LazyMotion, domAnimation } from "motion/react";
-import { IconLoader } from "@tabler/icons-react";
+import { IconLoader, IconScribble } from "@tabler/icons-react";
 import ImagePickerCanvas from "./image-picker-canvas";
 
 const ImagePicker = ({
@@ -31,7 +31,7 @@ const ImagePicker = ({
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
-  const [drawMode, setDrawMode] = React.useState<boolean>(true);
+  const [drawMode, setDrawMode] = React.useState<boolean>(false);
 
   const queryClient = useQueryClient();
   const updateProject = useMutation({
@@ -77,6 +77,7 @@ const ImagePicker = ({
       setCurrent(api.selectedScrollSnap() + 1);
     });
   }, [api]);
+
   React.useEffect(() => {
     if (current) {
       const selectedImage = images[current - 1];
@@ -86,10 +87,15 @@ const ImagePicker = ({
 
   return (
     <Carousel setApi={setApi} opts={{ active: !drawMode }}>
+      <div className="absolute top-0 right-0 z-10 p-2 flex flex-row items-center">
+        <Button size={"sm"} onClick={() => setDrawMode(!drawMode)}>
+          <IconScribble stroke={2} /> Draw Mode
+        </Button>
+      </div>
       <CarouselContent>
         {(images || []).map((image: string) => (
           <CarouselItem
-            className="overflow-hidden relative"
+            className="overflow-hidden relative "
             key={image}
             onClick={() => {
               const index = images.indexOf(image);
@@ -100,13 +106,7 @@ const ImagePicker = ({
             }}
           >
             <div className=" w-fit h-fit relative overflow-hidden rounded-lg ">
-              <ImagePickerCanvas />
-              <div className="absolute top-2 right-2 z-10 flex flex-row gap-1">
-                <Badge variant={"default"}>Editing</Badge>
-                <Badge>
-                  {current} / {count}
-                </Badge>
-              </div>
+              <ImagePickerCanvas drawMode={drawMode} />
               <div className="relative">
                 <Image
                   key={image}

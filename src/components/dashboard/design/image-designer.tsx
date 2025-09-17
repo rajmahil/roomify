@@ -29,7 +29,17 @@ import {
   IconBuildingStore,
   IconMoodKid,
   IconBabyCarriage,
+  IconX,
+  IconCheck,
 } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export const spaceTypes = [
   "Bedroom",
@@ -37,13 +47,134 @@ export const spaceTypes = [
   "Dining Room",
   "Home Office",
   "Kitchen",
-  "Single Bedroom",
   "Outdoor",
   "Bathroom",
   "Foyer",
   "Basement",
   "Kids Room",
   "Nursery",
+] as const;
+
+export const spaceObjects = [
+  {
+    spaceType: "Bedroom",
+    items: [
+      { name: "Bed" },
+      { name: "Nightstand" },
+      { name: "Dresser" },
+      { name: "Wardrobe" },
+      { name: "Lamp" },
+      { name: "Mirror" },
+    ],
+  },
+  {
+    spaceType: "Living Room",
+    items: [
+      { name: "Sofa" },
+      { name: "Coffee Table" },
+      { name: "TV" },
+      { name: "Bookshelf" },
+      { name: "Rug" },
+      { name: "Armchair" },
+    ],
+  },
+  {
+    spaceType: "Dining Room",
+    items: [
+      { name: "Dining Table" },
+      { name: "Chairs" },
+      { name: "Buffet/Sideboard" },
+      { name: "Chandelier" },
+      { name: "Tableware" },
+    ],
+  },
+  {
+    spaceType: "Home Office",
+    items: [
+      { name: "Desk" },
+      { name: "Office Chair" },
+      { name: "Computer" },
+      { name: "Bookshelf" },
+      { name: "Printer" },
+      { name: "Filing Cabinet" },
+    ],
+  },
+  {
+    spaceType: "Kitchen",
+    items: [
+      { name: "Refrigerator" },
+      { name: "Stove" },
+      { name: "Oven" },
+      { name: "Microwave" },
+      { name: "Sink" },
+      { name: "Cabinets" },
+      { name: "Cookware" },
+    ],
+  },
+  {
+    spaceType: "Outdoor",
+    items: [
+      { name: "Patio Furniture" },
+      { name: "BBQ Grill" },
+      { name: "Garden Tools" },
+      { name: "Planters" },
+      { name: "Umbrella" },
+      { name: "Fire Pit" },
+    ],
+  },
+  {
+    spaceType: "Bathroom",
+    items: [
+      { name: "Toilet" },
+      { name: "Shower" },
+      { name: "Bathtub" },
+      { name: "Sink" },
+      { name: "Mirror" },
+      { name: "Towel Rack" },
+    ],
+  },
+  {
+    spaceType: "Foyer",
+    items: [
+      { name: "Coat Rack" },
+      { name: "Console Table" },
+      { name: "Mirror" },
+      { name: "Shoe Rack" },
+      { name: "Umbrella Stand" },
+    ],
+  },
+  {
+    spaceType: "Basement",
+    items: [
+      { name: "Washer" },
+      { name: "Dryer" },
+      { name: "Storage Shelves" },
+      { name: "Workbench" },
+      { name: "Freezer" },
+    ],
+  },
+  {
+    spaceType: "Kids Room",
+    items: [
+      { name: "Bed" },
+      { name: "Toy Box" },
+      { name: "Desk" },
+      { name: "Bookshelf" },
+      { name: "Play Mat" },
+      { name: "Closet" },
+    ],
+  },
+  {
+    spaceType: "Nursery",
+    items: [
+      { name: "Crib" },
+      { name: "Changing Table" },
+      { name: "Rocking Chair" },
+      { name: "Dresser" },
+      { name: "Baby Monitor" },
+      { name: "Mobile" },
+    ],
+  },
 ] as const;
 
 export type SpaceType = (typeof spaceTypes)[number];
@@ -54,7 +185,6 @@ export const spaceIcons: Record<SpaceType, React.ComponentType<any>> = {
   "Dining Room": IconToolsKitchen2,
   "Home Office": IconHome2,
   Kitchen: IconFridge,
-  "Single Bedroom": IconBed,
   Outdoor: IconTrees,
   Bathroom: IconBath,
   Foyer: IconStairs,
@@ -67,6 +197,7 @@ const formSchema = z.object({
   spaceType: z.enum(spaceTypes).refine((val) => val !== undefined, {
     message: "Please select a space type",
   }),
+  spaceObjects: z.array(z.string()).optional(),
   prompt: z.string().min(3).max(150),
 });
 
@@ -82,6 +213,7 @@ const ImageDesigner = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      spaceType: "Bedroom",
       prompt: "",
     },
   });
@@ -91,11 +223,16 @@ const ImageDesigner = ({
       prompt,
       imageUrls,
       original_image,
+      spaceType,
+      spaceObjects,
     }: {
       prompt: string;
       imageUrls: string[];
       original_image: string;
-    }) => generateImage(prompt, imageUrls, original_image),
+      spaceType: string;
+      spaceObjects: string[];
+    }) =>
+      generateImage(prompt, imageUrls, original_image, spaceType, spaceObjects),
     onSuccess: (data: string[]) => {
       setValues({ edited_current_image: data[0] });
       console.log(data, "Generated Image Data");
@@ -111,57 +248,179 @@ const ImageDesigner = ({
       prompt: values.prompt,
       imageUrls: [imageUrl],
       original_image: current_image,
+      spaceType: values.spaceType,
+      spaceObjects: values.spaceObjects || [],
     });
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-10">
       <h2>{project?.name}</h2>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
           <FormField
             control={form.control}
             name="spaceType"
             render={({ field }) => (
-              <FormItem className="space-y-3">
-                <FormLabel>Space Type</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col"
-                  >
-                    {spaceTypes.map((type) => {
-                      const Icon = spaceIcons[type];
-                      return (
-                        <FormItem
-                          className="flex items-center gap-3"
-                          key={type}
-                        >
-                          <FormControl>
-                            <RadioGroupItem value={type} />
-                          </FormControl>
-                          <FormLabel className="font-normal flex flex-row items-center gap-2">
-                            <Icon />
-                            {type}
-                          </FormLabel>
-                        </FormItem>
-                      );
-                    })}
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
+              <FormItem>
+                <Carousel
+                  opts={{ align: "start" }}
+                  className="w-full overflow-hidden space-y-2"
+                >
+                  <div className="flex flex-row items-center justify-between">
+                    <FormLabel>Space Type</FormLabel>
+                    <div className="flex flex-row items-center">
+                      <CarouselPrevious
+                        type="button"
+                        variant={"ghost"}
+                      ></CarouselPrevious>
+                      <CarouselNext
+                        type="button"
+                        variant={"ghost"}
+                      ></CarouselNext>
+                    </div>
+                  </div>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="w-fit"
+                    >
+                      <CarouselContent>
+                        {spaceTypes.map((type) => {
+                          const Icon = spaceIcons[type];
+                          return (
+                            <CarouselItem
+                              key={type}
+                              className=" basis-1/4 min-w-0 "
+                            >
+                              <FormItem
+                                className="flex items-center gap-3"
+                                key={type}
+                              >
+                                <FormControl>
+                                  <RadioGroupItem
+                                    value={type}
+                                    className="hidden"
+                                  />
+                                </FormControl>
+                                <FormLabel
+                                  className={cn(
+                                    {
+                                      "border-primary/30 ":
+                                        type === field.value,
+                                    },
+                                    "font-normal flex flex-col items-start justify-end gap-1 px-3 py-2 border w-full !h-24 rounded-lg relative animations cursor-pointer"
+                                  )}
+                                >
+                                  <div
+                                    className={cn(
+                                      {
+                                        "scale-[100%] h-4.5 w-4.5":
+                                          type === field.value,
+                                        "scale-0 h-0 w-0": type !== field.value,
+                                      },
+                                      "absolute top-2 right-2 bg-primary text-background rounded-full p-px animations"
+                                    )}
+                                  >
+                                    <IconCheck size={16} stroke={3} />
+                                  </div>
+
+                                  <Icon size={24} stroke={1.5} />
+                                  <p className="text-sm font-medium">{type}</p>
+                                </FormLabel>
+                              </FormItem>
+                            </CarouselItem>
+                          );
+                        })}
+                      </CarouselContent>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </Carousel>
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
+            name="spaceObjects"
+            render={({ field }) => {
+              const selectedSpaceType = form.watch("spaceType");
+              const spaceData = spaceObjects.find(
+                (space) => space.spaceType === selectedSpaceType
+              );
+              const items = spaceData?.items || [];
+
+              return (
+                <FormItem className="space-y-2">
+                  <FormLabel>Space Items</FormLabel>
+                  <FormControl>
+                    <div className="flex flex-row flex-wrap gap-3">
+                      {items.map((item) => {
+                        const isSelected =
+                          field.value?.includes(item.name) || false;
+                        return (
+                          <div
+                            key={item.name}
+                            className={cn(
+                              "border rounded-lg p-2 cursor-pointer transition-all animations",
+                              {
+                                "border-primary/30": isSelected,
+                                "border-border hover:border-primary/30":
+                                  !isSelected,
+                              }
+                            )}
+                            onClick={() => {
+                              const currentValues = field.value || [];
+                              if (isSelected) {
+                                field.onChange(
+                                  currentValues.filter(
+                                    (val) => val !== item.name
+                                  )
+                                );
+                              } else {
+                                field.onChange([...currentValues, item.name]);
+                              }
+                            }}
+                          >
+                            <div className="flex items-center justify-between pl-1">
+                              <span className="text-sm font-medium">
+                                {item.name}
+                              </span>
+                              <div
+                                className={cn(
+                                  {
+                                    "scale-[100%] h-4.5 w-4.5": isSelected,
+                                    "scale-0 w-0 h-0": !isSelected,
+                                  },
+                                  "rounded-full flex items-center justify-center bg-primary text-white p-px ml-2 animations"
+                                )}
+                              >
+                                <IconCheck size={16} stroke={3} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+          <FormField
+            control={form.control}
             name="prompt"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Prompt</FormLabel>
+              <FormItem className="space-y-2">
+                <FormLabel>Additional Instructions</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Enter your prompt" {...field} />
+                  <Textarea
+                    placeholder="Any additional instructions.."
+                    rows={20}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
