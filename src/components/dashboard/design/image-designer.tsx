@@ -1,5 +1,5 @@
 import { Project } from "@/supabase/types";
-import React from "react";
+import React, { useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -31,6 +31,8 @@ import {
   IconBabyCarriage,
   IconX,
   IconCheck,
+  IconLoader,
+  IconSparkles,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import {
@@ -177,6 +179,39 @@ export const spaceObjects = [
   },
 ] as const;
 
+export const spaceStyle = [
+  {
+    key: "transitional",
+    name: "Transitional",
+    palette: "calm neutrals with navy/black accents",
+    materials: "painted wood, linen, antique brass",
+  },
+  {
+    key: "modern",
+    name: "Modern",
+    palette: "warm/neutral base + single bold accent",
+    materials: "matte metal, glass, light-to-medium woods",
+  },
+  {
+    key: "scandinavian",
+    name: "Scandinavian",
+    palette: "white/grey, pale oak, soft blue",
+    materials: "oak, cotton/wool, ceramic",
+  },
+  {
+    key: "japandi",
+    name: "Japandi",
+    palette: "warm beiges, charcoal/black accents",
+    materials: "oak/ash, stone, linen",
+  },
+  {
+    key: "contemporary",
+    name: "Contemporary",
+    palette: "soft creams/greige, airy neutrals",
+    materials: "light woods, boucle, brushed metal",
+  },
+] as const;
+
 export type SpaceType = (typeof spaceTypes)[number];
 
 export const spaceIcons: Record<SpaceType, React.ComponentType<any>> = {
@@ -198,7 +233,8 @@ const formSchema = z.object({
     message: "Please select a space type",
   }),
   spaceObjects: z.array(z.string()).optional(),
-  prompt: z.string().min(3).max(150),
+  spaceStyle: z.string().optional(),
+  prompt: z.string().optional(),
 });
 
 const ImageDesigner = ({
@@ -214,9 +250,9 @@ const ImageDesigner = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       spaceType: "Bedroom",
-      prompt: "",
     },
   });
+  const spaceType = form.watch("spaceType");
 
   const generateImageMutation = useMutation({
     mutationFn: ({
@@ -225,14 +261,26 @@ const ImageDesigner = ({
       original_image,
       spaceType,
       spaceObjects,
+      spaceStyle,
+      member_id,
     }: {
       prompt: string;
       imageUrls: string[];
       original_image: string;
       spaceType: string;
       spaceObjects: string[];
+      spaceStyle: string;
+      member_id: string;
     }) =>
-      generateImage(prompt, imageUrls, original_image, spaceType, spaceObjects),
+      generateImage(
+        prompt,
+        imageUrls,
+        original_image,
+        spaceType,
+        spaceObjects,
+        spaceStyle,
+        member_id
+      ),
     onSuccess: (data: string[]) => {
       setValues({ edited_current_image: data[0] });
       console.log(data, "Generated Image Data");
@@ -244,18 +292,24 @@ const ImageDesigner = ({
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_STORE_BUCKET_URL}${member_id}/${current_image}`;
+
     generateImageMutation.mutate({
-      prompt: values.prompt,
+      prompt: values?.prompt || "",
       imageUrls: [imageUrl],
       original_image: current_image,
       spaceType: values.spaceType,
       spaceObjects: values.spaceObjects || [],
+      spaceStyle: values.spaceStyle || "",
+      member_id,
     });
   }
 
+  useEffect(() => {
+    form.setValue("spaceObjects", []);
+  }, [spaceType, form]);
+
   return (
     <div className="flex flex-col gap-10">
-      <h2>{project?.name}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 ">
           <FormField
@@ -411,24 +465,82 @@ const ImageDesigner = ({
           />
           <FormField
             control={form.control}
-            name="prompt"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Additional Instructions</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Any additional instructions.."
-                    rows={20}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            name="spaceStyle"
+            render={({ field }) => {
+              return (
+                <FormItem className="space-y-2">
+                  <FormLabel>Space Style</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-row flex-wrap gap-3"
+                    >
+                      {spaceStyle.map((item) => {
+                        const isSelected = field.value === item.key;
+                        return (
+                          <FormItem
+                            key={item.key}
+                            className="flex items-center"
+                          >
+                            <FormControl>
+                              <RadioGroupItem
+                                value={item.key}
+                                className="hidden"
+                              />
+                            </FormControl>
+                            <FormLabel
+                              className={cn(
+                                "border rounded-lg p-3 cursor-pointer transition-all animations flex-1",
+                                {
+                                  "border-primary/30": isSelected,
+                                  "border-border hover:border-primary/30":
+                                    !isSelected,
+                                }
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-sm font-medium">
+                                    {item.name}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {item.palette}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {item.materials}
+                                  </span>
+                                </div>
+                                <div
+                                  className={cn(
+                                    {
+                                      "scale-[100%] h-4.5 w-4.5": isSelected,
+                                      "scale-0 w-0 h-0": !isSelected,
+                                    },
+                                    "rounded-full flex items-center justify-center bg-primary text-white p-px ml-2 animations"
+                                  )}
+                                >
+                                  <IconCheck size={16} stroke={3} />
+                                </div>
+                              </div>
+                            </FormLabel>
+                          </FormItem>
+                        );
+                      })}
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
-
           <Button type="submit" disabled={generateImageMutation.isPending}>
-            {generateImageMutation.isPending ? "Generating..." : "Submit"}
+            {generateImageMutation.isPending ? (
+              <IconLoader className="animate-spin" />
+            ) : (
+              <IconSparkles stroke={2} />
+            )}
+            Generate Image
           </Button>
         </form>
       </Form>

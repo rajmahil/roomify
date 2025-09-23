@@ -23,6 +23,7 @@ import FormNavigation from "./form-navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import DesignTab from "./design/design-tab";
 import { FormSteps, useDashbaordSearchParams } from "./search-params";
+import ImageExport from "./design/image-export";
 
 const queryClient = new QueryClient();
 
@@ -93,7 +94,7 @@ function UploadDashboard() {
               value={step}
               onValueChange={(value) => setValues({ step: value as FormSteps })}
             >
-              <div className=" mx-auto flex flex-col gap-8 w-full ring-5 ring-muted p-8 rounded-lg bg-white dark:bg-stone-900">
+              <div className=" mx-auto flex flex-col gap-12 w-full ring-5 ring-muted p-8 rounded-lg bg-white dark:bg-stone-900">
                 <FormStepper />
                 <TabsContent value="upload">
                   <div className="flex flex-col gap-8">
@@ -105,7 +106,7 @@ function UploadDashboard() {
                   <DesignTab />
                 </TabsContent>
                 <TabsContent value="export">
-                  Change your password here.
+                  <ImageExport />
                 </TabsContent>
                 <FormNavigation uppy={uppy} />
               </div>

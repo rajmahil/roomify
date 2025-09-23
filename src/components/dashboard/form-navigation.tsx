@@ -72,6 +72,7 @@ const FormNavigation = ({ uppy }: { uppy: Uppy }) => {
           >
             <IconChevronLeft /> Back
           </Button>
+          <Button onClick={handleNextStep}>Continue to Export</Button>
         </>
       )}
     </div>

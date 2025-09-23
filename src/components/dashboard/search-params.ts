@@ -15,6 +15,7 @@ export const useDashbaordSearchParams = () => {
       project_id: parseAsString.withDefault(""),
       current_image: parseAsString.withDefault(""),
       edited_current_image: parseAsString.withDefault(""),
+      refine_instructions_image: parseAsString.withDefault(""),
     },
     {
       history: "replace",

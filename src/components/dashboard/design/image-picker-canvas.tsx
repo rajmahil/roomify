@@ -1,8 +1,21 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import React, { useEffect, useRef, useState } from "react";
+import type React from "react";
+import { saveImage as saveImageUtil } from "@/lib/saveImage";
+import { useEffect, useRef, useState } from "react";
+import { useDashbaordSearchParams } from "../search-params";
 
-const ImagePickerCanvas = ({ drawMode }: { drawMode: boolean }) => {
+const ImagePickerCanvas = ({
+  drawMode,
+  member_id,
+}: {
+  drawMode: boolean;
+  member_id: string;
+}) => {
+  const { project_id, current_image, setValues } = useDashbaordSearchParams();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
 
@@ -13,6 +26,7 @@ const ImagePickerCanvas = ({ drawMode }: { drawMode: boolean }) => {
   });
   const [brushSize, setBrushSize] = useState(5);
   const [brushColor, setBrushColor] = useState("#FF0000");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const canvasContainer = canvasContainerRef.current;
@@ -80,7 +94,6 @@ const ImagePickerCanvas = ({ drawMode }: { drawMode: boolean }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Reload the original image
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
@@ -90,24 +103,30 @@ const ImagePickerCanvas = ({ drawMode }: { drawMode: boolean }) => {
     img.src = "/scenic-mountain-landscape.jpg";
   };
 
-  const saveImage = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const saveImage = async () => {
+    if (isSaving) return;
 
-    // Convert canvas to blob
-    canvas.toBlob((blob) => {
-      if (!blob) return;
+    setIsSaving(true);
+    try {
+      await saveImageUtil({
+        canvasRef: canvasRef as React.RefObject<HTMLCanvasElement>,
+        memberId: member_id,
+        currentImage: current_image,
+        setValues: (values) => {
+          console.log("Image saved:", values);
+          // Handle the saved image reference here
 
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `drawing-${Date.now()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }, "image/png");
+          setValues({
+            refine_instructions_image: values.refine_instructions_image,
+          });
+        },
+        uploadOnly: false, // Set to true if you only want to upload, not download
+      });
+    } catch (error) {
+      console.error("Failed to save image:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -131,6 +150,16 @@ const ImagePickerCanvas = ({ drawMode }: { drawMode: boolean }) => {
         height={canvasDimensions.height}
         width={canvasDimensions.width}
       />
+
+      <Button
+        size="sm"
+        variant="outline"
+        className="absolute bottom-4 left-4 bg-transparent"
+        onClick={saveImage}
+        disabled={isSaving}
+      >
+        {isSaving ? "Saving..." : "Save Image"}
+      </Button>
     </div>
   );
 };

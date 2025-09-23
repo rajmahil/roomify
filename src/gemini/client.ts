@@ -80,6 +80,27 @@ export class GeminiClient {
     return saved;
   }
 
+  async textToText(prompt: string) {
+    const response = await this.ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    const candidates = (response as any)?.candidates as Candidate[] | undefined;
+    const parts = candidates?.[0]?.content?.parts ?? [];
+    if (!parts.length) throw new Error("No content returned by model");
+
+    // Extract text content from the response
+    const textParts = parts
+      .filter((p) => !p.inlineData) // Only text parts, not inline data
+      .map((p) => (p as any).text)
+      .filter(Boolean);
+
+    if (!textParts.length) throw new Error("No text content found in response");
+
+    return textParts.join("");
+  }
+
   async imageToImageAndText(
     prompt: string,
     images: string[],
@@ -108,9 +129,7 @@ export class GeminiClient {
 
     const contents = [
       {
-        text:
-          prompt ||
-          "Use the first image for the room layout, the second for sofa style, and the third for color palette. Produce a final staged photo.",
+        text: prompt,
       },
       ...imageParts,
     ];
@@ -118,13 +137,7 @@ export class GeminiClient {
     const response = await this.ai.models.generateContent({
       model: "gemini-2.5-flash-image-preview",
       contents: contents,
-      // config: {
-      //   systemInstruction:
-      //     "You are a virtual interior designer, your goal is to add furniture and decor to a room, without changing the strucutre.",
-      // },
     });
-
-    // console.log(response.candidates[0]?.content?.parts, "Response from Gemini");
 
     const candidates = (response as any)?.candidates as Candidate[] | undefined;
     const parts = candidates?.[0]?.content?.parts ?? [];

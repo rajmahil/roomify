@@ -14,8 +14,10 @@ import { Button } from "@/components/ui/button";
 import { createNewProject } from "@/supabase/helpers";
 import { useDashbaordSearchParams } from "../search-params";
 import { m as motion, LazyMotion, domAnimation } from "motion/react";
-import { IconLoader, IconScribble } from "@tabler/icons-react";
+import { IconEdit, IconLoader, IconScribble } from "@tabler/icons-react";
 import ImagePickerCanvas from "./image-picker-canvas";
+import ImageDisplay from "./image-display";
+import ImageCompare from "@/components/image-compare";
 
 const ImagePicker = ({
   images,
@@ -32,6 +34,7 @@ const ImagePicker = ({
   const [count, setCount] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [drawMode, setDrawMode] = React.useState<boolean>(false);
+  const [compare, setCompare] = React.useState<boolean>(false);
 
   const queryClient = useQueryClient();
   const updateProject = useMutation({
@@ -86,10 +89,13 @@ const ImagePicker = ({
   }, [current, api]);
 
   return (
-    <Carousel setApi={setApi} opts={{ active: !drawMode }}>
+    <Carousel setApi={setApi} opts={{ active: !drawMode && !compare }}>
       <div className="absolute top-0 right-0 z-10 p-2 flex flex-row items-center">
+        <Button size={"sm"} onClick={() => setCompare(!compare)}>
+          <IconEdit stroke={2} /> Compare Mode
+        </Button>
         <Button size={"sm"} onClick={() => setDrawMode(!drawMode)}>
-          <IconScribble stroke={2} /> Draw Mode
+          <IconScribble stroke={2} /> Draw Mode {drawMode ? "On" : "Off"}
         </Button>
       </div>
       <CarouselContent>
@@ -106,34 +112,21 @@ const ImagePicker = ({
             }}
           >
             <div className=" w-fit h-fit relative overflow-hidden rounded-lg ">
-              <ImagePickerCanvas drawMode={drawMode} />
-              <div className="relative">
-                <Image
-                  key={image}
-                  src={`${
-                    process.env.NEXT_PUBLIC_SUPABASE_STORE_BUCKET_URL
-                  }${member_id}/${
-                    edited_current_image.startsWith(
-                      image.split("--edit--")
-                        ? image.split("--edit--")[0]
-                        : image
-                    )
-                      ? edited_current_image
-                      : image
-                  }`}
-                  alt=""
-                  width={800}
-                  height={800}
-                  className={`bg-muted object-cover border transition-all duration-300 ${
-                    loading ? "blur-sm" : ""
-                  }`}
+              <ImagePickerCanvas drawMode={drawMode} member_id={member_id} />
+              {!compare ? (
+                <ImageDisplay
+                  image={image}
+                  member_id={member_id}
+                  edited_current_image={edited_current_image}
                 />
-                {loading && (
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                    <IconLoader className="w-8 h-8 animate-spin text-white" />
-                  </div>
-                )}
-              </div>
+              ) : (
+                <ImageCompare
+                  width={800}
+                  height={500}
+                  beforeImage={`${process.env.NEXT_PUBLIC_SUPABASE_STORE_BUCKET_URL}${member_id}/${image}`}
+                  afterImage={`${process.env.NEXT_PUBLIC_SUPABASE_STORE_BUCKET_URL}${member_id}/${edited_current_image}`}
+                />
+              )}
               <LazyMotion features={domAnimation}>
                 {edited_current_image.startsWith(
                   image.split("--edit--") ? image.split("--edit--")[0] : image

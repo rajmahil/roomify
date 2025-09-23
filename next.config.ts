@@ -10,12 +10,9 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "api2-u129up.transloadit.com",
-      },
-
-      {
-        protocol: "https",
-        hostname: "api2-u706up.transloadit.com",
+        hostname: "**.transloadit.com",
+        port: "",
+        pathname: "/**",
       },
       {
         protocol: "https",
