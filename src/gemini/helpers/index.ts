@@ -1,3 +1,4 @@
+import { spaceStyle as spaceStyleObj } from "@/components/dashboard/design/image-designer";
 export const generateImage = async (
   prompt: string,
   imageUrls: string[],
@@ -12,19 +13,25 @@ export const generateImage = async (
     original_image
   );
 
+  // return structuredImage;
+
   const finalImageUrls = [
     `${process.env.NEXT_PUBLIC_SUPABASE_STORE_BUCKET_URL}${member_id}/${structuredImage[0]}`,
     ...imageUrls,
   ];
 
+  const selectedSpaceStyle = spaceStyleObj.find(
+    (style) => style.name === spaceStyle
+  );
+
   const finalPrompt = getPromptTemplate("furnishRoom")
     .replaceAll("[SPACE_TYPE]", spaceType)
     .replaceAll("[ITEMS_LIST]", spaceObjects.join(", "))
     .replaceAll("[ALLOW_PAINT]", "false")
-    .replaceAll("[STYLE_NAME]", spaceStyle)
+    .replaceAll("[STYLE_NAME]", selectedSpaceStyle?.name)
     .replaceAll("[USER_PROMPT]", prompt || "No additional preferences.")
-    .replaceAll("[COLOR_PALETTE]", "neutral tones with blue accents")
-    .replaceAll("[MATERIALS]", "wood, fabric, metal");
+    .replaceAll("[COLOR_PALETTE]", selectedSpaceStyle?.palette)
+    .replaceAll("[MATERIALS]", selectedSpaceStyle?.materials);
 
   const newProjectReq = await fetch("/api/image-to-image", {
     method: "POST",
@@ -217,6 +224,12 @@ COLOR & TONE OPTIMIZATION (GLOBAL ONLY):
 - Sharpening: natural, no halos; NO heavy filters (no HDR, bloom, vignette, split-toning, “cinematic” looks).
 - GLOBAL adjustments only. Do not apply local color edits inside protected regions (windows/doors) and do not alter their appearance.
 - Do not introduce or retain any chroma-key colors; the final image must contain **zero** pixels of #FF00FF or #39FF14 (± small tolerance).
+
+AESTHETIC & DESIGN QUALITY:
+- Beyond technical compliance, the result must be visually balanced, cohesive, and pleasing to the eye.
+- Furniture placement should follow interior design principles: symmetry where appropriate, natural flow of movement, proportional spacing, and harmony between color, style, and materials.
+- Aim for a polished, MLS-ready image that looks like a professional interior photo.
+- Do not leave the space looking sparse or awkwardly arranged; ensure all included items feel intentional and enhance the composition.
 
 
 Output:

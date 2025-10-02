@@ -33,7 +33,7 @@ const ImagePicker = ({
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
-  const [drawMode, setDrawMode] = React.useState<boolean>(false);
+  const [canvasMode, setCanvasMode] = React.useState<boolean>(false);
   const [compare, setCompare] = React.useState<boolean>(false);
 
   const queryClient = useQueryClient();
@@ -89,13 +89,13 @@ const ImagePicker = ({
   }, [current, api]);
 
   return (
-    <Carousel setApi={setApi} opts={{ active: !drawMode && !compare }}>
+    <Carousel setApi={setApi} opts={{ active: !canvasMode && !compare }}>
       <div className="absolute top-0 right-0 z-10 p-2 flex flex-row items-center">
         <Button size={"sm"} onClick={() => setCompare(!compare)}>
           <IconEdit stroke={2} /> Compare Mode
         </Button>
-        <Button size={"sm"} onClick={() => setDrawMode(!drawMode)}>
-          <IconScribble stroke={2} /> Draw Mode {drawMode ? "On" : "Off"}
+        <Button size={"sm"} onClick={() => setCanvasMode(!canvasMode)}>
+          <IconScribble stroke={2} /> Canvas Mode {canvasMode ? "On" : "Off"}
         </Button>
       </div>
       <CarouselContent>
@@ -112,7 +112,10 @@ const ImagePicker = ({
             }}
           >
             <div className=" w-fit h-fit relative overflow-hidden rounded-lg ">
-              <ImagePickerCanvas drawMode={drawMode} member_id={member_id} />
+              <ImagePickerCanvas
+                canvasMode={canvasMode}
+                member_id={member_id}
+              />
               {!compare ? (
                 <ImageDisplay
                   image={image}

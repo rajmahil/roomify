@@ -22,7 +22,7 @@ const formSchema = z.object({
       error: "Prompt is required",
     })
     .min(3)
-    .max(100),
+    .max(500),
 });
 
 const ImageRefine = ({ member_id }: { member_id: string }) => {

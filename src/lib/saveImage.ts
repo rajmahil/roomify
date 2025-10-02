@@ -41,6 +41,8 @@ export const saveImage = async ({
           upsert: false,
         });
 
+      console.log(data, error, "Upload response");
+
       if (error) {
         console.error("Upload error:", error);
         throw error;
