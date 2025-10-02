@@ -139,13 +139,14 @@ export class GeminiClient {
       contents: contents,
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const candidates = (response as any)?.candidates as Candidate[] | undefined;
     const parts = candidates?.[0]?.content?.parts ?? [];
     if (!parts.length) throw new Error("No content returned by model");
 
     const saved: string[] = [];
 
-    let index = 0;
+    const index = 0;
     for (const p of parts) {
       const b64 = p.inlineData?.data;
       if (!b64) continue; // skip text parts like “Here is your image...”

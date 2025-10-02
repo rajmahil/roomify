@@ -84,6 +84,7 @@ const DrawerContent = React.forwardRef<
     </DrawerPrimitive.Content>
   </DrawerPortal>
 ));
+DrawerContent.displayName = "DrawerContent";
 
 function DrawerHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (

@@ -310,7 +310,7 @@ export function RemoteSource({
                         onClick={() => open(breadcrumb.id)}
                         className="hover:!text-primary animations cursor-pointer"
                       >
-                        {/* @ts-ignore */}
+                        {/* @ts-expect-error fix later */}
                         {breadcrumb?.data?.name || methodTitle[id] || "Root"}
                       </button>
                     )}
